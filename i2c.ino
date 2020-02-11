@@ -17,7 +17,13 @@ void i2c_init(){
   /* ========== SERCOM INITIALIZATION =========== */
   SERCOM3->I2CM.CTRLA.reg |= SERCOM_I2CM_CTRLA_MODE_I2C_MASTER;
   SERCOM3->I2CM.BAUD.bit.BAUD = 59;
+
   PORT->Group[0].PINCFG[22].bit.PMUXEN = 1;
   PORT->Group[0].PINCFG[23].bit.PMUXEN = 1;
+
+  //select for (22, 23)/2 for function C
+  PORT->Group[0].PMUX[22/2].reg = PORT_PMUX_PMUXE_C | PORT_PMUX_PMUXO_C ;
+
+  
   /* ============================================ */
   }
