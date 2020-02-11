@@ -1,18 +1,30 @@
-void setup() {
-  // put your setup code here, to run once:
-  // Redefine the newlib libc _write() function so you can use printf in your code
-}
+#include <sam.h>
+#include "i2c.h"
 
-void loop() {
-  // put your main code here, to run repeatedly:
+extern "C" void __libc_init_array(void);
 
-}
-
-  extern "C" {
-    int _write(int fd, const void *buf, size_t count) {
-      // STDOUT
-      if (fd == 1)
-        SerialUSB.write((char*)buf, count);
-      return 0;
-    }
+extern "C" int _write(int fd, const void *buf, size_t count) {
+  //STDOUT
+  if(fd == 1)
+    SerialUSB.write((char*)buf, count);
+  return 0;
   }
+
+  int main(void){
+    /*=USB CONFIGURATION=*/
+    init();
+    __libc_init_array();
+    USBDevice.init();
+    USBDevice.attach();
+    /* ================= */
+
+    /* === Init Drivers === */
+    
+    /* ==================== */
+
+    /* ===== MAIN LOOP ===== */
+    while(1) {
+      
+      }
+    return 0;
+    }
