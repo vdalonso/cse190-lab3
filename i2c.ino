@@ -25,8 +25,16 @@ void i2c_init(){
   }
 
 uint8_t i2c_transaction(uint8_t address, uint8_t dir, uint8_t* data, uint8_t len){
-  SERCOM3->I2CM.ADDR.bit.ADDR = 0x19 << 1 | dir;
+  //SERCOM3->I2CM.ADDR.bit.ADDR = 0x19 << 1 | dir;
+  //dir == 1 : reading data
   if(dir){
+     //send an initial write to with the address of the device.
+     SERCOM3->I2CM.ADDR.bit.ADDR = 0x19 << 1 | 0;
+     //as for the data, send the address of the desired register
+     SERCOM3->I2CM.DATA.bit.DATA = address;
+     //start the second read phase with the same address but a read bit
+     SERCOM3->I2CM.ADDR.bit.ADDR = 0x19 << 1 | 1;
+     //continuously read bytes from the DATA reg until we reach the desired length
      for(uint8_t i = 0; i < len ; i++){
       while(!SERCOM3->I2CM.INTFLAG.bit.SB){}
         //read data
@@ -34,7 +42,6 @@ uint8_t i2c_transaction(uint8_t address, uint8_t dir, uint8_t* data, uint8_t len
         //write an ACK
         SERCOM3->I2CM.CTRLB.bit.ACKACT = 0;
      }
-     
      //NOTE: on last byte, send NACK
      SERCOM3->I2CM.CTRLB.bit.ACKACT = 1;
      //stop condition
@@ -42,6 +49,8 @@ uint8_t i2c_transaction(uint8_t address, uint8_t dir, uint8_t* data, uint8_t len
    }
    //dir == 0: writing data
    else{
+    SERCOM3->I2CM.ADDR.bit.ADDR = 0x19 << 1 | 0;
+    SERCOM3->I2CM.DATA.bit.DATA = address;
     for(uint8_t i = 1; i <= len ; i++){
         while(!SERCOM3->I2CM.INTFLAG.bit.MB){}
         //send data
