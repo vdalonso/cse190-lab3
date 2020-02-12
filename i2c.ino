@@ -17,29 +17,28 @@ void i2c_init(){
   /* ========== SERCOM INITIALIZATION =========== */
   SERCOM3->I2CM.CTRLA.reg |= SERCOM_I2CM_CTRLA_MODE_I2C_MASTER;
   SERCOM3->I2CM.BAUD.bit.BAUD = 59;
-  //enable the pins PA22 and PA23
   PORT->Group[0].PINCFG[22].bit.PMUXEN = 1;
   PORT->Group[0].PINCFG[23].bit.PMUXEN = 1;
 
-  //select for (22, 23)/2 for function C
-  PORT->Group[0].PMUX[22/2].reg = PORT_PMUX_PMUXE_C | PORT_PMUX_PMUXO_C ;
+  PORT->Group[0].PMUX[22/2].reg = PORT_PMUX_PMUXE_C | PORT_PMUX_PMUXO_C;
   /* ============================================ */
   }
-  
+
 uint8_t i2c_transaction(uint8_t address, uint8_t dir, uint8_t* data, uint8_t len){
-   //load the address for the slave to ADDR with the direction bit at bit 0
-   SERCOM3->I2CM.ADDR.bit.ADDR = address << 1 | dir;
-   //dir == 1:  reading data
-   if(dir){
+  SERCOM3->I2CM.ADDR.bit.ADDR = 0x19 << 1 | dir;
+  if(dir){
      for(uint8_t i = 0; i < len ; i++){
       while(!SERCOM3->I2CM.INTFLAG.bit.SB){}
         //read data
         data[i] = SERCOM3->I2CM.DATA.bit.DATA;
         //write an ACK
-        SERCOM3->I2CM.STATUS.bit.RXNACK = 0;
+        SERCOM3->I2CM.CTRLB.bit.ACKACT = 0;
      }
+     
      //NOTE: on last byte, send NACK
-     SERCOM3->I2CM.STATUS.bit.RXNACK = 1;
+     SERCOM3->I2CM.CTRLB.bit.ACKACT = 1;
+     //stop condition
+     SERCOM3->I2CM.CTRLB.bit.CMD = 3;
    }
    //dir == 0: writing data
    else{
@@ -48,6 +47,7 @@ uint8_t i2c_transaction(uint8_t address, uint8_t dir, uint8_t* data, uint8_t len
         //send data
         SERCOM3->I2CM.DATA.bit.DATA = data[len-i];
       }
+      //stop condition
+      SERCOM3->I2CM.CTRLB.bit.CMD = 3;
     }
-   
-}
+  }

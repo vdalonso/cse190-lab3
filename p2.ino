@@ -16,10 +16,11 @@ extern "C" int _write(int fd, const void *buf, size_t count) {
     __libc_init_array();
     USBDevice.init();
     USBDevice.attach();
-    /* ================= */
+    /*==================*/
 
     /* === Init Drivers === */
-    
+    i2c_init();
+    bma250_init();
     /* ==================== */
 
     /* ===== MAIN LOOP ===== */
