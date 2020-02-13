@@ -25,7 +25,9 @@ extern "C" int _write(int fd, const void *buf, size_t count) {
 
     /* ===== MAIN LOOP ===== */
     while(1) {
-      
+        int16_t x, y, z;
+        bma250_read_xyz(&x, &y, &z);
+        _write(1, x, 2);
       }
     return 0;
     }
