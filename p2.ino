@@ -29,8 +29,8 @@ extern "C" int _write(int fd, const void *buf, size_t count) {
         int16_t x, y, z;
         bma250_read_xyz(&x, &y, &z);
         while(1){
-          //printf("%d\r\n",x);
-          printf("run please\n\r");
+          printf("%d\r\n",x);
+          //printf("run please\n\r");
         }
       }
     return 0;
