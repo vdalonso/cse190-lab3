@@ -1,6 +1,8 @@
 //Initialize I2C Peripheral
 #include <sam.h>
 #include "i2c.h"
+#include <stdio.h>
+
 void i2c_init(){
   /* ========== CONFIGURE CLOCK FOR SERCOM ============ */
   GCLK->GENDIV.reg = GCLK_GENDIV_ID (0) | GCLK_GENDIV_DIV (0); //
@@ -30,8 +32,9 @@ void i2c_init(){
 
 uint8_t i2c_transaction(uint8_t address, uint8_t dir, uint8_t* data, uint8_t len){
   //before any transaction occurs, force the bus state to be idle.
+  printf("1\r\n");
   SERCOM3->I2CM.STATUS.bit.BUSSTATE = 0b01;
-  while(!SERCOM3->I2CM.SYNCBUSY.bit.SYSOP){}
+  while(SERCOM3->I2CM.SYNCBUSY.bit.SYSOP){}
   //dir == 1 : reading data
   if(dir){
      //send an initial write to with the address of the device.
@@ -41,18 +44,25 @@ uint8_t i2c_transaction(uint8_t address, uint8_t dir, uint8_t* data, uint8_t len
      //as for the data, send the address of the desired register
      SERCOM3->I2CM.DATA.bit.DATA = address;
      while(!SERCOM3->I2CM.INTFLAG.bit.MB){}
+     //repeated start
+     SERCOM3->I2CM.CTRLB.bit.CMD = 3;
      //start the second read phase with the same address but a read bit
      SERCOM3->I2CM.ADDR.bit.ADDR = 0x19 << 1 | 1;
      //continuously read bytes from the DATA reg until we reach the desired length
+     //while(1){printf("before for\r\n");}
+     //while(!SERCOM3->I2CM.INTFLAG.bit.MB){printf("before for");}
      for(uint8_t i = 0; i < len ; i++){
-      while(!SERCOM3->I2CM.INTFLAG.bit.SB){}
-        //read data
+        while(!SERCOM3->I2CM.INTFLAG.bit.SB){}
+        while(1){printf("before reading data\r\n");}
+        //read data - this is causing an error
         data[i] = SERCOM3->I2CM.DATA.bit.DATA;
         //NOTE: on last byte, send NACK
-        if(i = len -1)
+        if(i == len -1)
           SERCOM3->I2CM.CTRLB.bit.ACKACT = 1;
         else
           SERCOM3->I2CM.CTRLB.bit.ACKACT = 0;
+        SERCOM3->I2CM.CTRLB.bit.CMD = 2;
+        //printf("ran the for");
      }
      //stop condition
      SERCOM3->I2CM.CTRLB.bit.CMD = 3;
@@ -71,4 +81,5 @@ uint8_t i2c_transaction(uint8_t address, uint8_t dir, uint8_t* data, uint8_t len
       //stop condition
       SERCOM3->I2CM.CTRLB.bit.CMD = 3;
     }
+    return 1;
   }

@@ -1,5 +1,6 @@
 #include <sam.h>
 #include "i2c.h"
+#include <stdio.h>
 
 extern "C" void __libc_init_array(void);
 
@@ -8,7 +9,7 @@ extern "C" int _write(int fd, const void *buf, size_t count) {
   if(fd == 1)
     SerialUSB.write((char*)buf, count);
   return 0;
-  }
+}
 
   int main(void){
     /*=USB CONFIGURATION=*/
@@ -27,10 +28,10 @@ extern "C" int _write(int fd, const void *buf, size_t count) {
     while(1) {
         int16_t x, y, z;
         bma250_read_xyz(&x, &y, &z);
-        //while(1){
-        //printf("%d",x);
-          printf("going");
-        //}
+        while(1){
+          //printf("%d\r\n",x);
+          printf("run please\n\r");
+        }
       }
     return 0;
     }
