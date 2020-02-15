@@ -7,6 +7,10 @@ void ledcircle_select(uint8_t led) {
   PORT->Group[0].OUTCLR.reg = PORT_PA15 | PORT_PA20 | PORT_PA21 | PORT_PA06 | PORT_PA07;
   switch(led){
       //LED 1
+      case 0:
+          PORT->Group[0].DIRCLR.reg = PORT_PA15 | PORT_PA20 | PORT_PA21 | PORT_PA06 | PORT_PA07;
+          PORT->Group[0].OUTCLR.reg = PORT_PA15 | PORT_PA20 | PORT_PA21 | PORT_PA06 | PORT_PA07;
+          break;
       case 1:
         PORT->Group[0].DIRCLR.reg = PORT_PA21 | PORT_PA07 | PORT_PA06;
         PORT->Group[0].DIRSET.reg = PORT_PA15 | PORT_PA20;

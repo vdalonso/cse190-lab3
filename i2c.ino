@@ -11,6 +11,7 @@ void i2c_init(){
   while(GCLK->STATUS.bit.SYNCBUSY);//Synchronize
   GCLK->CLKCTRL.reg = GCLK_CLKCTRL_ID_SERCOM3_CORE | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_CLKEN; //Use SERCOM3 Peripheral
   while(GCLK->STATUS.bit.SYNCBUSY); //Synchronize
+  
   PM->APBCSEL.bit.APBCDIV = 0; //No prescaler
   PM->APBCMASK.bit.SERCOM3_ = 1; //Enable SERCOM3 Interface
   /* =================================================== */
@@ -55,19 +56,11 @@ uint8_t i2c_transaction(uint8_t address, uint8_t dir, uint8_t* data, uint8_t len
         while(!SERCOM3->I2CM.INTFLAG.bit.SB){}
         //while(1){printf("before reading data\r\n");}
         //read data - this is causing an error
+        //NOTE: on last byte, send NACK
         if(i == len -1)
           SERCOM3->I2CM.CTRLB.bit.ACKACT = 1;
         while(SERCOM3->I2CM.SYNCBUSY.bit.SYSOP){}
         data[i] = SERCOM3->I2CM.DATA.bit.DATA;
-        //NOTE: on last byte, send NACK
-        /*
-        else
-          SERCOM3->I2CM.CTRLB.bit.ACKACT = 0;
-        SERCOM3->I2CM.CTRLB.bit.CMD = 1;
-        */
-        //while(1){printf("after reading data\r\n");}
-        //while(SERCOM3->I2CM.SYNCBUSY.bit.SYSOP){}
-        //printf("ran the for");
      }
      //stop condition
      SERCOM3->I2CM.CTRLB.bit.CMD = 3;
