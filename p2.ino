@@ -21,12 +21,18 @@ extern "C" int _write(int fd, const void *buf, size_t count) {
   
   void TC3_Handler() {
   if(TC3->COUNT16.INTFLAG.bit.MC0 == 1){
-        //at every interrupt, check the readings for the accelerometer
-        int16_t x, y, z;
-        bma250_read_xyz(&x, &y, &z);
-        //check if our device is falling
-        check_fall(x, y, z);
-        printf("%d %d %d \r\n",x , y , x);
+        //at every interrupt, check the low_int flag in the accelerometer
+        uint8_t low_int = 0x11;
+        i2c_transaction(0x09 , 1 , &low_int , 1);
+        printf("%x\r\n", low_int);
+        if((low_int << 7)>>7){FALL = true;}
+        /*
+        uint8_t test = 0x88;
+        i2c_transaction(0x22 , 0 , &test , 1);
+        uint8_t result;
+        i2c_transaction(0x22 , 1 , &result , 1);
+        printf("%x\r\n", result);
+        */
     //if we fell, start counting minutes, otherwise just keep counting
     if(FALL){
       if(COUNTER == 1200){
@@ -55,10 +61,10 @@ extern "C" int _write(int fd, const void *buf, size_t count) {
 
     /* === Init Drivers === */
     i2c_init();
-    bma250_init();
-    //ledcircle_select(0);
+    //bma250_init();
     timer3_init();
-    //bma250_read_xyz(&x_prev, &y_prev, &z_prev);
+    //while(true){printf("before init");}
+    bma250_init();
     /* ==================== */
 
     /* ===== MAIN LOOP ===== */
@@ -91,19 +97,3 @@ extern "C" int _write(int fd, const void *buf, size_t count) {
         }
       }
     //helper function to determine if the device has fallen
-    void check_fall(int16_t x, int16_t y, int16_t z){
-      int vec_sum = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
-      if(!FREE_FALL && vec_sum < 110){
-        FREE_FALL = true;
-        FALL_SUM = vec_sum;
-        return;
-      }
-      else if(vec_sum < 110){FALL_SUM = vec_sum;}
-      else if(vec_sum > 400 && FALL_SUM < 110){FALL = true;}
-      else if(FALL){return;}
-      else{
-        FREE_FALL = false;
-        FALL_SUM = vec_sum;
-        return;
-        }
-    }
