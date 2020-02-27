@@ -4,6 +4,21 @@
 //#include <stdio.h>
 
 void i2c_init(){
+
+
+
+  /* ========== CONFIGURE 8MHz Clock Source and enable connect to GCLK(0) ============ */
+  SYSCTRL->OSC8M.bit.PRESC = 0;                          // no prescaler (is 8 on reset)
+  SYSCTRL->OSC8M.reg |= 1 << SYSCTRL_OSC8M_ENABLE_Pos;   // enable source
+
+  GCLK->GENDIV.bit.ID = 0x00;                            // select GCLK_GEN[1]
+  GCLK->GENDIV.bit.DIV = 0;                              // no prescaler
+
+  GCLK->GENCTRL.bit.ID = 0x00;                           // select GCLK_GEN[1]
+  GCLK->GENCTRL.reg |= GCLK_GENCTRL_SRC_OSC8M;           // OSC8M source
+  GCLK->GENCTRL.bit.GENEN = 1;                           // enable generator
+  
+
   /* ========== CONFIGURE CLOCK FOR SERCOM ============ */
   GCLK->GENDIV.reg = GCLK_GENDIV_ID (0) | GCLK_GENDIV_DIV (0); //
   while(GCLK->STATUS.bit.SYNCBUSY); //Synchronize
@@ -33,14 +48,14 @@ void i2c_init(){
   /* ========== Clock Gating =========== */
   //APBC
   PM->APBCMASK.bit.PAC2_ = PM->APBCMASK.bit.EVSYS_ = PM->APBCMASK.bit.SERCOM0_ = PM->APBCMASK.bit.SERCOM1_ = 
-    PM->APBCMASK.bit.SERCOM2_ = PM->APBCMASK.bit.SERCOM4_ = PM->APBCMASK.bit.SERCOM5_ = PM->APBCMASK.bit.TCC0_ = 
-    PM->APBCMASK.bit.TCC1_ = PM->APBCMASK.bit.TCC2_ = PM->APBCMASK.bit.TC4_  = PM->APBCMASK.bit.TC5_ = PM->APBCMASK.bit.TC6_ = 
-    PM->APBCMASK.bit.TC7_= PM->APBCMASK.bit.ADC_ = PM->APBCMASK.bit.AC_ = PM->APBCMASK.bit.DAC_ = PM->APBCMASK.bit.PTC_ = PM->APBCMASK.bit.I2S_ = 0;
+  PM->APBCMASK.bit.SERCOM2_ = PM->APBCMASK.bit.SERCOM4_ = PM->APBCMASK.bit.SERCOM5_ = PM->APBCMASK.bit.TCC0_ = 
+  PM->APBCMASK.bit.TCC1_ = PM->APBCMASK.bit.TCC2_ = PM->APBCMASK.bit.TC4_  = PM->APBCMASK.bit.TC5_ = PM->APBCMASK.bit.TC6_ = 
+  PM->APBCMASK.bit.TC7_= PM->APBCMASK.bit.ADC_ = PM->APBCMASK.bit.AC_ = PM->APBCMASK.bit.DAC_ = PM->APBCMASK.bit.PTC_ = PM->APBCMASK.bit.I2S_ = 0;
   //APBB
   PM->APBBMASK.bit.PAC1_ = PM->APBBMASK.bit.DSU_ = PM->APBBMASK.bit.NVMCTRL_ = PM->APBBMASK.bit.DMAC_ = PM->APBBMASK.bit.HMATRIX_ = 0;
   //APBA
   PM->APBAMASK.bit.PAC0_ = PM->APBAMASK.bit.PM_ = PM->APBAMASK.bit.SYSCTRL_ = PM->APBAMASK.bit.WDT_ = PM->APBAMASK.bit.RTC_ = PM->APBAMASK.bit.EIC_ =0;
-  //AHB
+  //AHB  TODO 
   
   }
 
