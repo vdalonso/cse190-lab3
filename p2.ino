@@ -12,7 +12,7 @@ extern "C" int _write(int fd, const void *buf, size_t count) {
     SerialUSB.write((char*)buf, count);
   return 0;
 }
-  volatile bool FALL = false;
+  volatile bool FALL = true;
   volatile bool FREE_FALL = false;
   volatile bool BLINKER = false;
   volatile int COUNTER = 0;
@@ -22,17 +22,17 @@ extern "C" int _write(int fd, const void *buf, size_t count) {
   void TC3_Handler() {
   if(TC3->COUNT16.INTFLAG.bit.MC0 == 1){
         //at every interrupt, check the low_int flag in the accelerometer
-        uint8_t low_int = 0x11;
-        i2c_transaction(0x09 , 1 , &low_int , 1);
-        printf("%x\r\n", low_int);
-        if((low_int << 7)>>7){FALL = true;}
-        /*
-        uint8_t test = 0x88;
-        i2c_transaction(0x22 , 0 , &test , 1);
+        //uint8_t low_int ;
+        //i2c_transaction(0x09 , 1 , &low_int , 1);
+        //printf("%x\r\n", low_int);
+        //if((low_int << 7)>>7){FALL = true;}
+        
+        //uint8_t test = 0x88;
+        //i2c_transaction(0x22 , 0 , &test , 1);
         uint8_t result;
-        i2c_transaction(0x22 , 1 , &result , 1);
+        i2c_transaction(0x00 , 1 , &result , 1);
         printf("%x\r\n", result);
-        */
+        
     //if we fell, start counting minutes, otherwise just keep counting
     if(FALL){
       if(COUNTER == 1200){

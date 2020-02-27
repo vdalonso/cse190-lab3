@@ -30,7 +30,18 @@ void i2c_init(){
   SERCOM3->I2CM.INTENSET.reg = SERCOM_I2CM_INTENSET_SB | SERCOM_I2CM_INTENSET_MB;
   SERCOM3->I2CM.CTRLA.bit.ENABLE = 1;
   while(SERCOM3->I2CM.SYNCBUSY.bit.ENABLE){}
-  /* ============================================ */
+  /* ========== Clock Gating =========== */
+  //APBC
+  PM->APBCMASK.bit.PAC2_ = PM->APBCMASK.bit.EVSYS_ = PM->APBCMASK.bit.SERCOM0_ = PM->APBCMASK.bit.SERCOM1_ = 
+    PM->APBCMASK.bit.SERCOM2_ = PM->APBCMASK.bit.SERCOM4_ = PM->APBCMASK.bit.SERCOM5_ = PM->APBCMASK.bit.TCC0_ = 
+    PM->APBCMASK.bit.TCC1_ = PM->APBCMASK.bit.TCC2_ = PM->APBCMASK.bit.TC4_  = PM->APBCMASK.bit.TC5_ = PM->APBCMASK.bit.TC6_ = 
+    PM->APBCMASK.bit.TC7_= PM->APBCMASK.bit.ADC_ = PM->APBCMASK.bit.AC_ = PM->APBCMASK.bit.DAC_ = PM->APBCMASK.bit.PTC_ = PM->APBCMASK.bit.I2S_ = 0;
+  //APBB
+  PM->APBBMASK.bit.PAC1_ = PM->APBBMASK.bit.DSU_ = PM->APBBMASK.bit.NVMCTRL_ = PM->APBBMASK.bit.DMAC_ = PM->APBBMASK.bit.HMATRIX_ = 0;
+  //APBA
+  PM->APBAMASK.bit.PAC0_ = PM->APBAMASK.bit.PM_ = PM->APBAMASK.bit.SYSCTRL_ = PM->APBAMASK.bit.WDT_ = PM->APBAMASK.bit.RTC_ = PM->APBAMASK.bit.EIC_ =0;
+  //AHB
+  
   }
 
 uint8_t i2c_transaction(uint8_t address, uint8_t dir, uint8_t* data, uint8_t len){
@@ -75,12 +86,12 @@ uint8_t i2c_transaction(uint8_t address, uint8_t dir, uint8_t* data, uint8_t len
         while(!SERCOM3->I2CM.INTFLAG.bit.MB){}
         //send data
         SERCOM3->I2CM.DATA.bit.DATA = data[len-i];
-        if(i == len -1)
-          SERCOM3->I2CM.CTRLB.bit.ACKACT = 1;
+        //if(i == len -1)
+          //SERCOM3->I2CM.CTRLB.bit.ACKACT = 1;
         while(SERCOM3->I2CM.SYNCBUSY.bit.SYSOP){}
       }
      //stop condition
-     SERCOM3->I2CM.CTRLB.bit.CMD = 3;
+     //SERCOM3->I2CM.CTRLB.bit.CMD = 3;
      while(SERCOM3->I2CM.SYNCBUSY.bit.SYSOP){}
     }
     return 1;
