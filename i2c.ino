@@ -4,10 +4,8 @@
 //#include <stdio.h>
 
 void i2c_init(){
-
-
-
   /* ========== CONFIGURE 8MHz Clock Source and enable connect to GCLK(0) ============ */
+ /*
   SYSCTRL->OSC8M.bit.PRESC = 0;                          // no prescaler (is 8 on reset)
   SYSCTRL->OSC8M.reg |= 1 << SYSCTRL_OSC8M_ENABLE_Pos;   // enable source
 
@@ -17,7 +15,7 @@ void i2c_init(){
   GCLK->GENCTRL.bit.ID = 0x00;                           // select GCLK_GEN[1]
   GCLK->GENCTRL.reg |= GCLK_GENCTRL_SRC_OSC8M;           // OSC8M source
   GCLK->GENCTRL.bit.GENEN = 1;                           // enable generator
-  
+  */
 
   /* ========== CONFIGURE CLOCK FOR SERCOM ============ */
   GCLK->GENDIV.reg = GCLK_GENDIV_ID (0) | GCLK_GENDIV_DIV (0); //
@@ -96,18 +94,18 @@ uint8_t i2c_transaction(uint8_t address, uint8_t dir, uint8_t* data, uint8_t len
     SERCOM3->I2CM.ADDR.bit.ADDR = 0x19 << 1 | 0;
     while(!SERCOM3->I2CM.INTFLAG.bit.MB){}
     SERCOM3->I2CM.DATA.bit.DATA = address;
+    while(SERCOM3->I2CM.SYNCBUSY.bit.SYSOP){}
     while(!SERCOM3->I2CM.INTFLAG.bit.MB){}
-    for(uint8_t i = 1; i <= len ; i++){
-        while(!SERCOM3->I2CM.INTFLAG.bit.MB){}
+    
+        //while(!SERCOM3->I2CM.INTFLAG.bit.MB){}
         //send data
-        SERCOM3->I2CM.DATA.bit.DATA = data[len-i];
-        //if(i == len -1)
-          //SERCOM3->I2CM.CTRLB.bit.ACKACT = 1;
+        SERCOM3->I2CM.DATA.bit.DATA = *data;
+        while(!SERCOM3->I2CM.INTFLAG.bit.MB){}
         while(SERCOM3->I2CM.SYNCBUSY.bit.SYSOP){}
-      }
-     //stop condition
-     //SERCOM3->I2CM.CTRLB.bit.CMD = 3;
-     while(SERCOM3->I2CM.SYNCBUSY.bit.SYSOP){}
+        while(SERCOM3->I2CM.STATUS.bit.RXNACK){}
+    SERCOM3->I2CM.CTRLB.bit.ACKACT = 1;
+    while(!SERCOM3->I2CM.INTFLAG.bit.MB){}
+    SERCOM3->I2CM.CTRLB.bit.CMD = 3;
     }
     return 1;
   }

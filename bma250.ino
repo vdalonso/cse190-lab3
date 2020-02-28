@@ -4,26 +4,22 @@
 #include "bma250.h"
 
 void bma250_init(){
-  //change low-g mode
-  //while(true){printf("before i2c transaction");}
   //set low-g to axis-summing mode
   uint8_t data = 0x85;
   i2c_transaction(0x24 , 0 , &data , 1);
-  //while(true){printf("after i2c transaction");}
   //set interrupts to latch for 1 second.
   data = 0xff;
   i2c_transaction(0x21 , 0 , &data , 1);
-  //set duration to 10ms
+  //set threshold
+  data = 0x44;
+  i2c_transaction(0x23 , 0 , &data , 1);
+  //set to low power mode
   data = 0x04;
-  i2c_transaction(0x22 , 0 , &data , 1);
+  i2c_transaction(0x12 , 0, &data , 1);
+  i2c_transaction(0x11 , 0, &data , 1);
   //activate the interrupt
   data = 0x08;
   i2c_transaction(0x17 , 0 , &data , 1);
-  /*
-  uint8_t res;
-  i2c_transaction(0x00 , 1, &res , 1);
-  while(true){printf("%x\r\n", res);}
-  */
   }
   
 void bma250_read_xyz(int16_t* x, int16_t* y, int16_t* z){

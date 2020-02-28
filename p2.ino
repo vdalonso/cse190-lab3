@@ -12,26 +12,18 @@ extern "C" int _write(int fd, const void *buf, size_t count) {
     SerialUSB.write((char*)buf, count);
   return 0;
 }
-  volatile bool FALL = true;
-  volatile bool FREE_FALL = false;
+  volatile bool FALL = false;
   volatile bool BLINKER = false;
   volatile int COUNTER = 0;
   volatile int8_t MINUTES = 0;
-  volatile int FALL_SUM = 2000;
   
   void TC3_Handler() {
   if(TC3->COUNT16.INTFLAG.bit.MC0 == 1){
         //at every interrupt, check the low_int flag in the accelerometer
-        //uint8_t low_int ;
-        //i2c_transaction(0x09 , 1 , &low_int , 1);
+        uint8_t low_int ;
+        i2c_transaction(0x09 , 1 , &low_int , 1);
         //printf("%x\r\n", low_int);
-        //if((low_int << 7)>>7){FALL = true;}
-        
-        //uint8_t test = 0x88;
-        //i2c_transaction(0x22 , 0 , &test , 1);
-        uint8_t result;
-        i2c_transaction(0x00 , 1 , &result , 1);
-        printf("%x\r\n", result);
+        if((low_int << 7)>>7){FALL = true;}
         
     //if we fell, start counting minutes, otherwise just keep counting
     if(FALL){
@@ -65,11 +57,12 @@ extern "C" int _write(int fd, const void *buf, size_t count) {
     timer3_init();
     //while(true){printf("before init");}
     bma250_init();
+    PM->SLEEP.bit.IDLE = 0x01;
     /* ==================== */
 
     /* ===== MAIN LOOP ===== */
     while(1) {
-        if(BLINKER){
+        while(BLINKER){
           //display out ID (8 bits) which is 0xf1 where LED 1 is the MSB for the ID and LED 8 is the LSB for the ID
           //also display the amount of minutes passed (8 bits) passed represented in binary. MSB is led 9 and LSB 16
           ledcircle_select(1);
@@ -77,11 +70,10 @@ extern "C" int _write(int fd, const void *buf, size_t count) {
           ledcircle_select(3);
           ledcircle_select(4);
           ledcircle_select(8);
-          ledcircle_select(0);
           show_minutes();
-        }
-        else
           ledcircle_select(0);
+        }
+        __WFI();
       }
     return 0;
     }
