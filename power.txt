@@ -1,0 +1,3 @@
+ We have done the Clock Gating in i2c_init(), set the oscillator input to the 32kHZ one which we have also divided, used the WFI interrupt instruction at the end of the while(1) loop , put the CPU in Idle mode and used the interrupt g to detect the fall to minimize the number of reads, we have also adapted the init() method to our purpose renaming it to my_init().
+
+The lowest obtained power consumption that we obtained was 2.0mA when LEDs are not blinking and 2.8 when LEDS are blinking.

@@ -16,7 +16,6 @@ void timer3_init(){
   //divide by 1024 which will give you your new frequency
   TC3->COUNT16.CTRLA.reg = TC_CTRLA_MODE_COUNT16 | TC_CTRLA_PRESCALER_DIV2 | TC_CTRLA_WAVEGEN_MFRQ;
   TC3->COUNT16.CC[0].reg = 5000; //25,000 cycles @ 500,000 cycles/s = 50ms
-  //timer3_set(50); //Every 50ms
   TC3->COUNT16.INTENSET.reg = TC_INTENSET_MC0; //Match interrupts on channel 0
   TC3->COUNT16.CTRLA.bit.ENABLE = 1; //Enable TC3 Peripheral
   

@@ -49,17 +49,41 @@ extern "C" int _write(int fd, const void *buf, size_t count) {
   timer3_reset();
   }
 
+void my_init( void )
+{
+  // Set Systick to 1ms interval, common to all Cortex-M variants
+  if ( SysTick_Config( SystemCoreClock / 1000 ) )
+  {
+    // Capture error
+    while ( 1 ) ;
+  }
+  NVIC_SetPriority (SysTick_IRQn,  (1 << __NVIC_PRIO_BITS) - 2);  /* set Priority for Systick Interrupt (2nd lowest) */
+
+
+
+// Defining VERY_LOW_POWER breaks Arduino APIs since all pins are considered INPUT at startup
+// However, it really lowers the power consumption by a factor of 20 in low power mode (0.03mA vs 0.6mA)
+#ifndef VERY_LOW_POWER
+  // Setup all pins (digital and analog) in INPUT mode (default is nothing)
+  for (uint32_t ul = 0 ; ul < NUM_DIGITAL_PINS ; ul++ )
+  {
+    pinMode( ul, INPUT ) ;
+  }
+#endif
+
+
+}
+
   int main(void){
     /*=USB CONFIGURATION=*/
 
-    init();
+    my_init();
     __libc_init_array();
     USBDevice.init();
     USBDevice.attach();
     /*==================*/
 
    
-
     GCLK->GENDIV.bit.ID = 0x00;                            // select GCLK_GEN[0]
     GCLK->GENDIV.bit.DIV = 40;                              // no prescaler
 
@@ -78,8 +102,6 @@ extern "C" int _write(int fd, const void *buf, size_t count) {
     /* ===== MAIN LOOP ===== */
     while(1) {
 
-        
-        
         while(BLINKER){
           //display out ID (8 bits) which is 0xf1 where LED 1 is the MSB for the ID and LED 8 is the LSB for the ID
           //also display the amount of minutes passed (8 bits) passed represented in binary. MSB is led 9 and LSB 16
