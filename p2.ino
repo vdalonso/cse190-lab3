@@ -16,11 +16,17 @@ extern "C" int _write(int fd, const void *buf, size_t count) {
   volatile bool BLINKER = false;
   volatile int COUNTER = 0;
   volatile int8_t MINUTES = 0;
+  static uint8_t i = 0 ;
+
   
   void TC3_Handler() {
+
+  
+ 
   if(TC3->COUNT16.INTFLAG.bit.MC0 == 1){
         //at every interrupt, check the low_int flag in the accelerometer
         uint8_t low_int ;
+        
         i2c_transaction(0x09 , 1 , &low_int , 1);
         //printf("%x\r\n", low_int);
         if((low_int << 7)>>7){FALL = true;}
@@ -45,23 +51,35 @@ extern "C" int _write(int fd, const void *buf, size_t count) {
 
   int main(void){
     /*=USB CONFIGURATION=*/
+
     init();
     __libc_init_array();
     USBDevice.init();
     USBDevice.attach();
     /*==================*/
 
+   
+
+    GCLK->GENDIV.bit.ID = 0x00;                            // select GCLK_GEN[0]
+    GCLK->GENDIV.bit.DIV = 40;                              // no prescaler
+
+    GCLK->GENCTRL.bit.ID = 0x00;                           // select GCLK_GEN[0]
+    GCLK->GENCTRL.reg |= GCLK_GENCTRL_SRC_OSC32K;
+    GCLK->GENCTRL.bit.GENEN = 1;                           // enable generator
+  
+    
     /* === Init Drivers === */
-    i2c_init();
-    //bma250_init();
     timer3_init();
-    //while(true){printf("before init");}
+    i2c_init();
     bma250_init();
     PM->SLEEP.bit.IDLE = 0x01;
     /* ==================== */
 
     /* ===== MAIN LOOP ===== */
     while(1) {
+
+        
+        
         while(BLINKER){
           //display out ID (8 bits) which is 0xf1 where LED 1 is the MSB for the ID and LED 8 is the LSB for the ID
           //also display the amount of minutes passed (8 bits) passed represented in binary. MSB is led 9 and LSB 16
@@ -77,6 +95,9 @@ extern "C" int _write(int fd, const void *buf, size_t count) {
       }
     return 0;
     }
+
+
+
     //helper function to convert minutes passed to binary in their respective LEDs
     void show_minutes(){
         int8_t curr_min = MINUTES;

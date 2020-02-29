@@ -5,23 +5,10 @@
 
 void i2c_init(){
   /* ========== CONFIGURE 8MHz Clock Source and enable connect to GCLK(0) ============ */
- /*
-  SYSCTRL->OSC8M.bit.PRESC = 0;                          // no prescaler (is 8 on reset)
-  SYSCTRL->OSC8M.reg |= 1 << SYSCTRL_OSC8M_ENABLE_Pos;   // enable source
 
-  GCLK->GENDIV.bit.ID = 0x00;                            // select GCLK_GEN[1]
-  GCLK->GENDIV.bit.DIV = 0;                              // no prescaler
-
-  GCLK->GENCTRL.bit.ID = 0x00;                           // select GCLK_GEN[1]
-  GCLK->GENCTRL.reg |= GCLK_GENCTRL_SRC_OSC8M;           // OSC8M source
-  GCLK->GENCTRL.bit.GENEN = 1;                           // enable generator
-  */
 
   /* ========== CONFIGURE CLOCK FOR SERCOM ============ */
-  GCLK->GENDIV.reg = GCLK_GENDIV_ID (0) | GCLK_GENDIV_DIV (0); //
-  while(GCLK->STATUS.bit.SYNCBUSY); //Synchronize
-  GCLK->GENCTRL.reg |= GCLK_GENCTRL_ID (0) | GCLK_GENCTRL_GENEN; //Use Generator 0 and Enable it
-  while(GCLK->STATUS.bit.SYNCBUSY);//Synchronize
+  
   GCLK->CLKCTRL.reg = GCLK_CLKCTRL_ID_SERCOM3_CORE | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_CLKEN; //Use SERCOM3 Peripheral
   while(GCLK->STATUS.bit.SYNCBUSY); //Synchronize
   PM->APBCSEL.bit.APBCDIV = 0; //No prescaler
@@ -38,7 +25,7 @@ void i2c_init(){
   SERCOM3->I2CM.CTRLA.reg |= SERCOM_I2CM_CTRLA_MODE_I2C_MASTER;
   SERCOM3->I2CM.CTRLB.bit.SMEN = 1;
   while(SERCOM3->I2CM.SYNCBUSY.bit.ENABLE){}
-  SERCOM3->I2CM.BAUD.bit.BAUD = 55;
+  SERCOM3->I2CM.BAUD.bit.BAUD = 5;
   while(SERCOM3->I2CM.SYNCBUSY.bit.ENABLE){}
   SERCOM3->I2CM.INTENSET.reg = SERCOM_I2CM_INTENSET_SB | SERCOM_I2CM_INTENSET_MB;
   SERCOM3->I2CM.CTRLA.bit.ENABLE = 1;
@@ -53,7 +40,7 @@ void i2c_init(){
   PM->APBBMASK.bit.PAC1_ = PM->APBBMASK.bit.DSU_ = PM->APBBMASK.bit.NVMCTRL_ = PM->APBBMASK.bit.DMAC_ = PM->APBBMASK.bit.HMATRIX_ = 0;
   //APBA
   PM->APBAMASK.bit.PAC0_ = PM->APBAMASK.bit.PM_ = PM->APBAMASK.bit.SYSCTRL_ = PM->APBAMASK.bit.WDT_ = PM->APBAMASK.bit.RTC_ = PM->APBAMASK.bit.EIC_ =0;
-  //AHB  TODO 
+  //AHB  --> cannot disable any
   
   }
 
